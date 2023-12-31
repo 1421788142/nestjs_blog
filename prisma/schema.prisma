@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model user {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  email      String
+  userName   String   @unique
+  nickName   String
+  address    String
+  gender     Int
+  age        Int
+  status     Int
+  cUserId    Int
+  cUserName  String
+  userId     String
+  password   String
+  avatar     String?
+  role       String?
+  remark     String?
+  createTime DateTime @default(now())
+  updateTime DateTime @updatedAt
+}
+
+// 角色表
+model role {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  roleName   String
+  roleId     String
+  status     Int
+  orderNum   Int
+  remark     String?
+  cUserId    Int
+  cUserName  String
+  menuId     String
+  createTime DateTime @default(now())
+  updateTime DateTime @updatedAt
+}
+
+// 菜单表
+model menu {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  title     String
+  component String
+  path      String
+  menuType  String
+  orderNum  Int
+  pId       Int
+  icon      String
+  perms     String
+  isFrame   Int
+  status    Int
+  keepAlive Int
+  hidden    Int
+}
+
+// 通用参数表
+model generalParameters {
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  name      String
+  value     String
+  valueType String
+  orderNum  Int
+  remark    String?
+}
+
+// 图片表
+model uploadFile {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  fileId     String
+  fileName   String
+  filePath   String
+  fileSize   Int
+  fileType   String
+  keywords   String
+  userId     Int
+  remark     String?
+  createTime DateTime @default(now())
+  updateTime DateTime @updatedAt
+}
