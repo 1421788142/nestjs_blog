@@ -26,13 +26,16 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Installation
+## 安装依赖
+
+##### 注意node版本 我目前用的20.9.0
+
 
 ```bash
 $ yarn install
 ```
 
-## Running the app
+## 启动项目
 
 ```bash
 # development
@@ -41,33 +44,22 @@ $ yarn run start
 # watch mode
 $ yarn run start:dev
 
-# production mode
-$ yarn run start:prod
 ```
 
-## Test
+## 启动项目前置操作
 
 ```bash
-# unit tests
-$ yarn run test
+# 1.创建数据库 目前用的本地 创建nestjs数据库(在.env文件配置链接地址)
 
-# e2e tests
-$ yarn run test:e2e
+# 2.始化prisma(仓库项目已带了 prisma文件 所以可以不用执行这个命令)
+$ npx prisma init
 
-# test coverage
-$ yarn run test:cov
+# 2.将迁移文件生成表 (前提已经创建好数据库)
+$ npx prisma db pull
+
+# 3.启动项目生成基本数据 （在prisma文件夹里面的seed.ts）
+$ npx prisma db seed
+
+# 4.做完以上步骤基本上可以实现登录效果了
+
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
