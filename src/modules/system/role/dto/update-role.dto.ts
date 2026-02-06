@@ -7,6 +7,5 @@ export class UpdateRoleDto extends OmitType(CreateRoleDto, ["roleName"]) {
   roleId: string;
   @IsNotEmpty({ message: "角色名称不能为空" })
   roleName: string;
-  createTime?: any;
-  id?: number;
+  id: number;
 }

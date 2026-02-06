@@ -15,6 +15,8 @@ import { PageQueryType } from "./types";
 import { ResetParameterFactory } from "@/common/decorator/resetParameter.decorator";
 import { AuthUser } from "@/common/decorator/user.decorator";
 import { JwtUserType } from "@/common/shared/user.model";
+import { FilterFields } from "@/common/decorator/filterFields.decorator";
+import { FilterFieldsInterceptor } from "@/common/interceptors/filterFields.interceptor";
 
 @Controller("user")
 export class UserController {
@@ -35,7 +37,7 @@ export class UserController {
 
   @Get("/listByPage")
   findAll(@AuthUser() user: JwtUserType, @Query() query: PageQueryType) {
-    return this.userService.findAll(query, user.id);
+    return this.userService.findAll(query, user.userId);
   }
 
   @Get("/detail/:id")
@@ -44,8 +46,11 @@ export class UserController {
   }
 
   @Post("/update")
-  update(@Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+updateUserDto.id, updateUserDto);
+  @UseInterceptors(FilterFieldsInterceptor)
+  @FilterFields()
+  update(@Body() updateUserDto: any) {
+    const dto = updateUserDto as UpdateUserDto;
+    return this.userService.update(+dto.id, dto);
   }
 
   @Delete("/delete/:id")

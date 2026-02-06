@@ -8,7 +8,7 @@ export class CommonService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly httpAdapterHost: HttpAdapterHost,
-  ) {}
+  ) { }
 
   // 动态获取当前项目的运行ip端口
   async getIpPort() {
@@ -17,7 +17,8 @@ export class CommonService {
     const address =
       addressInfo.address === "::" ? "localhost" : addressInfo.address;
     const port = addressInfo.port;
-    return `http://${address}:${port}`;
+    // return `http://${address}:${port}`;
+    return `http://test.wiipark.com:${port}`;
   }
 
   // 获取文件

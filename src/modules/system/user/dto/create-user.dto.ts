@@ -22,9 +22,11 @@ export class CreateUserDto {
   role: string;
   address: string;
   status: number;
-  userId: string;
   remark: string;
   gender: number;
   age: number;
-  createTime?: any;
+  extend?: string;
+  extend1?: string;
+  extend2?: string;
+  extend3?: string;
 }

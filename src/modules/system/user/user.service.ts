@@ -9,28 +9,31 @@ import {
   removeObjKeys,
   whereCuserByStatus,
 } from "@/utils/http.util";
-import { formatDate } from "@/utils/dayjs.util";
 import { hash } from "argon2";
 import { onPickKeys } from "@/utils/index.util";
 import { JwtUserType } from "@/common/shared/user.model";
 import { handlePageData } from "@/utils/http.util";
 import { user } from "@prisma/client";
+import { I18nService } from "nestjs-i18n";
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly i18n: I18nService,
+  ) {}
 
   async create(createUserDto: CreateUserDto, user: JwtUserType) {
-    // 删除密码确认
     const reslot = await this.prisma.user.create({
       data: {
+        // 删除密码确认
         ...removeObjKeys(createUserDto, ["passwordConfirm"]),
         status: createUserDto.status || 1,
         gender: createUserDto.gender || 0,
         password: await hash(createUserDto.password),
         userId: "",
-        cUserId: user.id,
-        cUserName: user.name,
+        cUserId: user.userId,
+        mUserId: null,
       },
     });
     const upDateUser = await this.update(
@@ -44,7 +47,7 @@ export class UserService {
     return upDateUser;
   }
 
-  async findAll(query: PageQueryType, cUserId: number) {
+  async findAll(query: PageQueryType, cUserId: string) {
     // 获取全部角色组
     const roles = await this.prisma.role.findMany();
     const likes = queryLike(query, ["userName", "nickName", "role"]);
@@ -61,13 +64,9 @@ export class UserService {
     return handlePageData<user>("user", where, query, data => {
       data = data.map(x => ({
         ...x,
-        createTime: formatDate({
-          type: "YYYY-MM-DD HH:mm:ss",
-          value: x.createTime,
-        }),
         roleName:
           x.role === "admin"
-            ? "超级管理员"
+            ? this.i18n.t("messages.superAdministrator")
             : roles.find(y => y.roleId === x.role)?.roleName,
       }));
       return onPickKeys(data, ["password"]);
@@ -89,13 +88,13 @@ export class UserService {
           where: { id },
         });
     if (user.userName !== updateUserDto.userName) {
-      httpError("用户名错误");
+      httpError(this.i18n.t("messages.userNameError"));
     }
     if (
       +user.id === 1 &&
       (updateUserDto.role !== "admin" || !updateUserDto.status)
     ) {
-      httpError("超级管理员不允许修改权限");
+      httpError(this.i18n.t("messages.adminRole"));
     }
 
     const reslot = await this.prisma.user.update({
@@ -103,6 +102,7 @@ export class UserService {
       data: {
         ...removeObjKeys(updateUserDto, ["createTime", "roleName"]),
         password: user.password,
+        mTime: new Date(),
       },
     });
     return reslot;
@@ -110,7 +110,7 @@ export class UserService {
 
   async remove(id: number) {
     if (id === 1) {
-      httpError("超级管理员不允许删除");
+      httpError(this.i18n.t("messages.adminDelete"));
     }
     const reslot = await this.prisma.user.delete({
       where: {

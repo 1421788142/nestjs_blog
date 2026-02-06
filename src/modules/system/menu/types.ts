@@ -1,4 +1,4 @@
 export interface PageQueryType {
-    title: string,
-    status: string,
+  title: string;
+  status?: string;
 }

@@ -9,6 +9,7 @@ import { unlink } from "fs";
 import { promisify } from "util";
 import { DeleteFileDto } from "./dto/delete-file";
 import { httpError } from "@/utils/http.util";
+import { I18nService } from "nestjs-i18n";
 
 const unlinkAsync = promisify(unlink);
 
@@ -16,6 +17,7 @@ const unlinkAsync = promisify(unlink);
 export class UploadService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly i18n: I18nService,
     private readonly common: CommonService,
   ) {}
   // 获取图片
@@ -38,7 +40,7 @@ export class UploadService {
         fileName: file.originalname,
         fileSize: file.size,
         filePath: `/upload/images/${base}`,
-        userId: user.id,
+        cUserId: user.userId,
         fileId: "",
       },
     });
@@ -57,7 +59,7 @@ export class UploadService {
       // 删除每个文件
       await Promise.all(fileUrls.map(file => unlinkAsync(file)));
     } catch {
-      httpError("删除失败");
+      httpError(this.i18n.t("messages.deleteError"));
     }
   }
 
@@ -79,9 +81,11 @@ export class UploadService {
           fileType: query.fileType,
         },
       });
-      return `已删除${delRes.count}条数据`;
+      return this.i18n.t("messages.deleteErrorCount", {
+        args: { count: delRes.count },
+      });
     } catch {
-      httpError("删除失败");
+      httpError(this.i18n.t("messages.deleteError"));
     }
   }
 }

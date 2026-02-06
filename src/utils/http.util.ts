@@ -2,6 +2,7 @@ import { FindAllType } from "@/typings/findAll.type";
 import { ResponsePageData } from "@/typings/http.type";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
+import { formatDate } from "./dayjs.util";
 
 /**
  * @description 处理分页
@@ -67,9 +68,60 @@ export const handlePageData = async <T extends object>(
     where: where,
     ...page,
   });
-  //返回体
+
+  // 提取所有的 cUserId 和 mUserId 并去重
+  const cUserIds = Array.from(
+    new Set(result.map(x => x.cUserId).filter(Boolean)),
+  );
+  const mUserIds = Array.from(
+    new Set(result.map(x => x.mUserId).filter(Boolean)),
+  );
+
+  // 查询 cUserName 和 mUserName
+  const userMap = new Map<string, string>();
+  if (cUserIds.length > 0 || mUserIds.length > 0) {
+    const users = await prisma.user.findMany({
+      where: {
+        userId: {
+          in: [...cUserIds, ...mUserIds] as string[], // 查询 cUserId 和 mUserId 对应的用户
+        },
+      },
+      select: {
+        userId: true,
+        userName: true,
+      },
+    });
+    users.forEach(user => userMap.set(user.userId, user.userName));
+  }
+
+  //返回体 (这里处理常用的字段)
+  let newResult = result.map(x => {
+    let commonObj = {};
+    if (x?.cUserId) {
+      commonObj["cUserName"] = userMap.get(x.cUserId);
+    }
+    if (x?.mUserId) {
+      commonObj["mUserName"] = userMap.get(x.mUserId);
+    }
+    if (x?.cTime) {
+      commonObj["cTime"] = formatDate({
+        type: "YYYY-MM-DD HH:mm:ss",
+        value: x.cTime,
+      });
+    }
+    if (x?.mTime) {
+      commonObj["mTime"] = formatDate({
+        type: "YYYY-MM-DD HH:mm:ss",
+        value: x.mTime,
+      });
+    }
+    return {
+      ...x,
+      ...commonObj,
+    };
+  });
   return {
-    dataList: afterLoad ? afterLoad(result) : result,
+    dataList: afterLoad ? afterLoad(newResult) : newResult,
     total: await prisma[table].count({
       where: where,
     }),
@@ -123,9 +175,9 @@ export const whereCuserByStatus = <T extends object, K extends keyof T>(
         wheres[key as unknown as K] = +query[key];
       }
     }
-    if (+query[keys.cUserId] !== 1) {
+    if (query[keys.cUserId] !== "W1") {
       //代表不是超管 因为超管查询所有
-      wheres[keys.cUserId] = +query[keys.cUserId];
+      wheres[keys.cUserId] = query[keys.cUserId];
     }
   }
   return wheres;

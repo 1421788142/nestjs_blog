@@ -5,6 +5,6 @@ export interface PageQueryType extends FindAllType {
   nickName: string;
   role: string;
   cUserId: number;
-  createTime: Array<Date>;
+  cTime: Array<Date>;
   status: string;
 }

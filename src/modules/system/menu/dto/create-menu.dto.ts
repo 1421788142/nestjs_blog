@@ -18,4 +18,6 @@ export class CreateMenuDto {
   keepAlive: number;
   status: number;
   perms: string;
+  extend: string;
+  extend1: string;
 }

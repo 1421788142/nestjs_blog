@@ -13,13 +13,14 @@ import { PrismaService } from "@/common/prisma/prisma.service";
 import { JwtUserType } from "@/common/shared/user.model";
 import { AuthService } from "@/modules/auth/auth.service";
 import { role } from "@prisma/client";
-import { formatDate } from "@/utils/dayjs.util";
+import { I18nService } from "nestjs-i18n";
 
 @Injectable()
 export class RoleService {
   constructor(
     private prisma: PrismaService,
     private readonly auth: AuthService,
+    private readonly i18n: I18nService,
   ) {}
 
   // 创建
@@ -29,28 +30,44 @@ export class RoleService {
         ...createRoleDto,
         status: createRoleDto.status || 1,
         roleId: "",
-        cUserId: user.id,
-        cUserName: user.name,
+        cUserId: user.userId,
+        mUserId: null,
       },
     });
-    const upDateRole = await this.update(reslot.id, {
-      ...reslot,
-      roleId: `R${reslot.id}`,
-    });
+    const upDateRole = await this.update(
+      reslot.id,
+      {
+        ...reslot,
+        roleId: `R${reslot.id}`,
+      },
+      user,
+    );
     return upDateRole;
   }
 
-  // 查询菜单权限
-  async findMenus(user: JwtUserType) {
+  // 获取用户权限 菜单|文档
+  async findAuth(user: JwtUserType) {
     const menus = await this.auth.getUserMenu({
       name: user.name,
       id: user.id,
     });
-    return menus;
+
+    const docs = await this.auth.getUserDoc(
+      {
+        name: user.name,
+        id: user.id,
+      },
+      { name: null },
+    );
+
+    return {
+      menuList: menus.dataList,
+      docList: docs.dataList,
+    };
   }
 
   // 列表
-  async findAll(query: PageQueryType, cUserId: number) {
+  async findAll(query: PageQueryType, cUserId: string) {
     const likes = queryLike(query, ["roleName"]);
     const where = {
       ...likes,
@@ -62,15 +79,7 @@ export class RoleService {
         },
       ),
     };
-    return handlePageData<role>("role", where, query, data => {
-      return data.map(x => ({
-        ...x,
-        createTime: formatDate({
-          type: "YYYY-MM-DD HH:mm:ss",
-          value: x.createTime,
-        }),
-      }));
-    });
+    return handlePageData<role>("role", where, query);
   }
 
   async findOne(id: number) {
@@ -80,11 +89,13 @@ export class RoleService {
     return reslot;
   }
 
-  async update(id: number, updateRoleDto: UpdateRoleDto) {
+  async update(id: number, updateRoleDto: UpdateRoleDto, user: JwtUserType) {
     const reslot = await this.prisma.role.update({
       where: { id },
       data: {
-        ...removeObjKeys(updateRoleDto, ["createTime"]),
+        ...removeObjKeys(updateRoleDto, ["cTime"]),
+        mTime: new Date(),
+        mUserId: user.userId,
       },
     });
     return reslot;
@@ -98,7 +109,7 @@ export class RoleService {
       },
     });
     if (hasUserRole.length) {
-      httpError("该角色下存在用户无法删除");
+      httpError(this.i18n.t("messages.hasRoleByUserDelete"));
     }
     const reslot = await this.prisma.role.delete({
       where: { id },

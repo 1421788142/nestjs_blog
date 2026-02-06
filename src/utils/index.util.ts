@@ -48,3 +48,7 @@ export const deepClone = function <T extends object>(
   });
   return tempObject;
 };
+
+/**
+ *  多语言替换字符串
+ */

@@ -54,12 +54,24 @@ $ yarn run start:dev
 # 2.始化prisma(仓库项目已带了 prisma文件 所以可以不用执行这个命令)
 $ npx prisma init
 
-# 2.将迁移文件生成表 (前提已经创建好数据库)
+# 3.项目第一次跑使用此命令
+$ npx prisma migrate dev --name init
+
+# 4.将迁移文件生成表 (前提已经创建好数据库)
 $ npx prisma db pull
 
-# 3.启动项目生成基本数据 （在prisma文件夹里面的seed.ts）
+# 5.启动项目生成基本数据 （在prisma文件夹里面的seed.ts）
 $ npx prisma db seed
 
-# 4.做完以上步骤基本上可以实现登录效果了
+# 6.做完以上步骤基本上可以实现登录效果了
+
+# 创建新的迁移文件，描述新增模型的变更
+npx prisma migrate dev --create-only --name add_new_model
+
+# 创建新的迁移文件，描述字段变更
+npx prisma migrate dev --create-only --name add_new_field
+
+# 执行上面两个命令后都需要执行一下两个： 应用迁移到数据库 && 重新生成 Prisma Client
+npx prisma migrate deploy && npx prisma generate
 
 ```

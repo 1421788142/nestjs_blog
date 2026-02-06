@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
 } from "@nestjs/common";
 import { RoleService } from "./role.service";
 import { CreateRoleDto } from "./dto/create-role.dto";
@@ -13,6 +14,8 @@ import { UpdateRoleDto } from "./dto/update-role.dto";
 import { PageQueryType } from "./types";
 import { AuthUser } from "@/common/decorator/user.decorator";
 import { JwtUserType } from "@/common/shared/user.model";
+import { FilterFieldsInterceptor } from "@/common/interceptors/filterFields.interceptor";
+import { FilterFields } from "@/common/decorator/filterFields.decorator";
 
 @Controller("role")
 export class RoleController {
@@ -23,14 +26,14 @@ export class RoleController {
     return this.roleService.create(createRoleDto, user);
   }
 
-  @Get("/menus")
+  @Get("/auth")
   findMenus(@AuthUser() user: JwtUserType) {
-    return this.roleService.findMenus(user);
+    return this.roleService.findAuth(user);
   }
 
   @Get("/listByPage")
   findAll(@AuthUser() user: JwtUserType, @Query() query: PageQueryType) {
-    return this.roleService.findAll(query, user.id);
+    return this.roleService.findAll(query, user.userId);
   }
 
   @Get("/detail/:id")
@@ -39,8 +42,10 @@ export class RoleController {
   }
 
   @Post("/update")
-  update(@Body() updateRoleDto: UpdateRoleDto) {
-    return this.roleService.update(+updateRoleDto.id, updateRoleDto);
+  @UseInterceptors(FilterFieldsInterceptor)
+  @FilterFields()
+  update(@AuthUser() user: JwtUserType, @Body() updateRoleDto: UpdateRoleDto) {
+    return this.roleService.update(+updateRoleDto.id, updateRoleDto, user);
   }
 
   @Delete("/delete/:id")

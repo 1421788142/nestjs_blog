@@ -7,14 +7,20 @@ import { HttpExceptionsFilter } from "@/common/filters/exceptions.filter";
 import helmet from "helmet";
 import csurf from "csurf";
 import { join } from "path";
-
+import { json, urlencoded } from "express";
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // 设置 body 限制，支持更大的请求体
+  app.use(json({ limit: "50mb" }));
+  app.use(urlencoded({ limit: "50mb", extended: true }));
+
   // 定义前缀
   app.setGlobalPrefix("dev");
 
   //cors：跨域资源共享，方式一：允许跨站访问
-  app.enableCors();
+  app.enableCors({
+    origin: "*",
+  });
 
   //防止跨站脚本攻击
   app.use(
@@ -41,6 +47,7 @@ async function bootstrap() {
     extensions: ["png", "jpg", "jpeg", "gif"],
   });
   // 启动
-  await app.listen(5555);
+
+  await app.listen(9913, "0.0.0.0");
 }
 bootstrap();

@@ -1,0 +1,18 @@
+{
+  "passwordError": "Incorrect password",
+  "userDisable": "The current user is disabled. Please contact the administrator.",
+  "userNotRole": "The current user has no assigned role. Please contact the administrator.",
+  "userRoleDisable": "The role bound to the current user is disabled. Please contact the administrator.",
+  "oldPasswordError": "Old password is incorrect.",
+  "hasDirectoryChildrenDelete": "This directory contains subdirectories and cannot be deleted.",
+  "hasDirectoryFileChildrenDelete": "This project contains directories or files and cannot be deleted.",
+  "hasMenuChildrenDelete": "This menu has submenus and cannot be deleted.",
+  "hasRoleByUserDelete": "There are users under this role, so it cannot be deleted.",
+  "userNameError": "Incorrect username.",
+  "adminRole": "Super administrator permissions cannot be modified.",
+  "adminDelete": "Super administrator cannot be deleted.",
+  "deleteError": "Failed to delete.",
+  "deleteErrorCount": "{{count}} records have been deleted",
+  "apiError": "API request error. Please contact the administrator.",
+  "superAdministrator": "Super administrator"
+}

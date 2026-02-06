@@ -11,7 +11,7 @@ export class Validate extends ValidationPipe {
   ): string[] {
     const message = {};
     validationErrors.forEach(error => {
-      message[error.property] = Object.values(error.constraints).join(",");
+      message[error.property] = Object.values(error.constraints).join(", ");
     });
     throw new HttpException(
       {
